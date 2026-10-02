@@ -23,5 +23,10 @@
     "description": "每次拉取的消息条数（用于判断新消息，需大于轮询间隔内可能新增的条数）",
     "type": "int",
     "default": 10
+  },
+  "self_nickname": {
+    "description": "本人在 WCX history 里的 sender 恒为 \"<myself>\"（无昵称、无 wxid）。此处指定一个固定昵称，让画像、学习与人格自迭代都归到同一 ID 下，而不是产生一个叫 \"<myself>\" 的虚拟用户",
+    "type": "string",
+    "default": "猫南北"
   }
 }

@@ -50,6 +50,9 @@ DEFAULT_CONFIG_TMPL = {
     "conv_ids": "",                       # 逗号分隔，可填多个会话
     "poll_interval": 5,
     "page_size": 10,
+    # 本人在 WCX history 里的 sender 恒为 "<myself>"（无昵称、无 wxid）。
+    # 这里指定一个固定昵称，让画像/学习/人格迭代都归到同一 ID 下。
+    "self_nickname": "猫南北",
 }
 
 
@@ -69,6 +72,9 @@ class WeKitAdapter(Platform):
         self.token: str = platform_config.get("token", "")
         self.poll_interval: float = float(platform_config.get("poll_interval", 5))
         self.page_size: int = int(platform_config.get("page_size", 10))
+        # 本人发言在 WCX 里只有 "<myself>"，映射到这个昵称
+        self.self_nickname: str = str(
+            platform_config.get("self_nickname") or "猫南北").strip() or "猫南北"
 
         # 多个会话：逗号分隔（兼容旧的 conv_id 单值配置）
         raw = platform_config.get("conv_ids") or platform_config.get("conv_id") or ""
@@ -178,8 +184,9 @@ class WeKitAdapter(Platform):
                 if fp in self._seen_set[conv]:
                     continue
                 self._mark(conv, m)
-                if str(m.get("sender", "")) == "<myself>":
-                    continue                       # 自己发的不上报
+                # 注意：不过滤 <myself>。人格自迭代需要采集本人的发言来学习
+                # 说话风格，self 回声由 Iris 的 collector / learning 模块负责
+                # （它们自己会跳过 self_id 与 bot 消息）。
                 abm = self.convert_message(conv, m)
                 if abm is None:
                     continue
@@ -189,7 +196,13 @@ class WeKitAdapter(Platform):
     def convert_message(self, conv_id: str,
                         data: Dict[str, Any]) -> Optional[AstrBotMessage]:
         content = str(data.get("content") or "")
-        sender = str(data.get("sender") or "unknown")
+        raw_sender = data.get("sender")
+        sender = "" if raw_sender is None else str(raw_sender)
+        # WCX 对本人发言只给字面量 "<myself>"，没有昵称也没有 wxid。
+        # 换成固定昵称，让画像 / learning / 人格自迭代都归到同一个 ID 下，
+        # 而不是产生一个叫 "<myself>" 或 "unknown" 的虚拟用户。
+        if sender.strip() in ("", "<myself>", "<self>"):
+            sender = self.self_nickname
         if not content:
             return None
 
