@@ -1,0 +1,27 @@
+{
+  "base_url": {
+    "description": "手机 WeKit API 的地址（如 http://127.0.0.1:30010 或内网穿透后的地址）。注意：AstrBot 所在机器必须能访问到该地址",
+    "type": "string",
+    "default": "http://127.0.0.1:30010"
+  },
+  "token": {
+    "description": "手机 wcx 里设置的 api_auth_token（Authorization: Bearer）。只能用 A-Z a-z 0-9 - _ . ~ 字符，否则 ktor 会返回 400 Invalid auth header",
+    "type": "string",
+    "default": ""
+  },
+  "conv_ids": {
+    "description": "要接管的会话 ID，逗号分隔可多个（群为 xxx@chatroom，私聊为 wxid_xxx）。插件会逐个轮询；具体哪些会话真正生效由 AstrBot 的平台设置（白名单）决定",
+    "type": "string",
+    "default": ""
+  },
+  "poll_interval": {
+    "description": "轮询新消息的间隔（秒）。太小会频繁请求手机，太大响应慢",
+    "type": "int",
+    "default": 5
+  },
+  "page_size": {
+    "description": "每次拉取的消息条数（用于判断新消息，需大于轮询间隔内可能新增的条数）",
+    "type": "int",
+    "default": 10
+  }
+}
